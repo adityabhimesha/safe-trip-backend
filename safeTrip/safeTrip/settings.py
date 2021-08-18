@@ -46,8 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tokens',
     "corsheaders",
-    'django_celery_beat',
-    
+    'kronos',
+
 ]
 
 MIDDLEWARE = [

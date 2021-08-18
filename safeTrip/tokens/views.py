@@ -52,6 +52,7 @@ def searchToken(request):
 def getTrendingTokens(request):
 
     topTokens = Tokens.objects.all().order_by('-views')
+    
 
     return HttpResponse(json.dumps(topTokens), content_type="application/json")
 
