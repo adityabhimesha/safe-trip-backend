@@ -118,6 +118,7 @@ query($base:String, $quote:String, $pair:String, $balance:[String!], $since:ISO8
     dailyVolume: dexTrades(
       baseCurrency: {is: $base}
       quoteCurrency: {is: $quote}
+      exchangeName: {in: ["Pancake", "Pancake v2"]}
       time: {since: $since}
     ) {
       timeInterval {
@@ -138,6 +139,7 @@ query($base:String, $quote:String, $pair:String, $balance:[String!], $since:ISO8
     }
     trades:dexTrades(
       options: {limit: 500, desc: ["block.timestamp.time"]}
+      exchangeName: {in: ["Pancake", "Pancake v2"]}
       baseCurrency: {is: $base}
       quoteCurrency: {is: $quote}
       date: {since: "2021-08-08"}
@@ -179,17 +181,17 @@ query($base:String, $quote:String, $pair:String, $balance:[String!], $since:ISO8
 
 ohlcQuery = """
 
-{
+query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601DateTime){
   ethereum(network: bsc) {
     dexTrades(
       options: {asc: "timeInterval.minute"}
-      date: {till: "2021-10-12T07:23:21.000Z", since: "2021-08-10T07:23:21.000Z"}
+      date: {till:$till, since: $since}
       exchangeName: {in:["Pancake", "Pancake v2"]}
-      baseCurrency: {is: "0xe3916a4dc3c952c78348379a62d66869d9b59942"}
-      quoteCurrency: {is: "0xe9e7cea3dedca5984780bafc599bd69add087d56"}
+      baseCurrency: {is: $base}
+      quoteCurrency: {is: $quote}
     ) {
       timeInterval {
-        minute(count: 30, format: "%Y-%m-%dT%H:%M:%SZ")
+        minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
       }
       volume: quoteAmount
       high: quotePrice(calculate: maximum)

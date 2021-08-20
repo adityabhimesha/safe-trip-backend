@@ -2,7 +2,7 @@ import json
 from django.http import HttpResponse
 from .models import Tokens
 from . import controllers
-import arrow
+import datetime
 
 error = {
     "error" : "There Has Been A Error, Please Try Again!"
@@ -51,10 +51,34 @@ def searchToken(request):
 
 def getTrendingTokens(request):
 
-    topTokens = Tokens.objects.all().order_by('-views')
-    
+    topTokens = Tokens.objects.all().order_by('-views')[:10]
+    payload = []
+    for token in topTokens:
+        res = {}
+        res["pair_address"] = token.pair_address
+        res["pair_base_name"] = token.pair_base_name
+        res["pair_quote_name"] = token.pair_quote_name
+        res["views"] = token.views
 
-    return HttpResponse(json.dumps(topTokens), content_type="application/json")
+        payload.append(res)
+    
+    return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+def getSponsoredTokens(request):
+
+    topTokens = Tokens.objects.filter(is_sponsored=True)
+    payload = []
+    for token in topTokens:
+        res = {}
+        res["pair_address"] = token.pair_address
+        res["pair_base_name"] = token.pair_base_name
+        res["pair_quote_name"] = token.pair_quote_name
+        res["details"] = token.sponsored_details
+
+        payload.append(res)
+    
+    return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
 #main call when requesting for pool address
@@ -99,14 +123,17 @@ def getTokenMetaData(request,poolAddress):
         token.save()
 
 
-    ar = arrow.utcnow()
-    ar = ar.shift(days=-10)
+    ar = datetime.datetime.utcnow()
+    temp = datetime.datetime(ar.year,ar.month,ar.day)
+    start = temp - datetime.timedelta(days=8)
+    end = datetime.datetime.utcnow()
+    print(end)
 
     result = controllers.getMetaVolumeLQTrades(
         token.pair_base_address,
         token.pair_quote_address,
         token.pair_address,
-        ar.format('YYYY-MM-DDTHH:mm:ss')
+        start.strftime('%Y%m%dT%H%M%S'),
         )
 
     if result.status_code != 200:
@@ -134,14 +161,89 @@ def getTokenMetaData(request,poolAddress):
 
 
     return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+
+def getSTFDailyChart(request):
+    base = "0xe3916a4dc3c952c78348379a62d66869d9b59942"
+    quote = "0xe9e7cea3dedca5984780bafc599bd69add087d56"
+    since = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    till = datetime.datetime.utcnow()
+    resolution = "1440"
+    result = controllers.getOHLCData(
+        base,
+        quote,
+        since.strftime('%Y%m%dT%H%M%S'),
+        till.strftime('%Y%m%dT%H%M%S'),
+        int(resolution)
+        )
+    if result.status_code != 200:
+        error = {
+            "status":"There has been an Error!",
+            
+        }
+        return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
     
+    result = result.json()
+    payload = {
+        "data" : result['data']['ethereum']['dexTrades'],
+    }
+    return HttpResponse(json.dumps(payload), content_type="application/json")
+
+#chart data for other charts
 
 def getCandlesForChart(request):
-    ar = arrow.utcnow()
-    ar = ar.shift(days=-10)
+    base = request.GET['base']
+    quote = request.GET['quote']
+    till = datetime.datetime.fromtimestamp(int(request.GET['till']))
+    resolution = request.GET['resolution']
 
-    #2021-08-11T12:17:19.352690+00:00
-    return HttpResponse(ar.format('YYYY-MM-DD'), content_type="application/json")
+    if resolution == '1D':
+        resolution = "1440"
+    elif resolution == '1W':
+        resolution = "10080"
+
+    count = (int(request.GET['count'])) * (int(resolution))
+    since = till - datetime.timedelta(minutes=count)
+
+    print(since, till, count)
+    result = controllers.getOHLCData(
+        base,
+        quote,
+        since.strftime('%Y%m%dT%H%M%SZ'),
+        till.strftime('%Y%m%dT%H%M%SZ'),
+        int(resolution)
+        )
+    if result.status_code != 200:
+        error = {
+            "status":"There has been an Error!",
+            
+        }
+        return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
+
+    res = []
+    previousTime = till
+    result = result.json()
+    for ohlc in result['data']['ethereum']['dexTrades']:
+        obj = {}
+        datetime1 = datetime.datetime.strptime(ohlc['timeInterval']['minute'], "%Y-%m-%dT%H:%M:%SZ")
+        if datetime1 > since and datetime1 < till:
+            obj['time'] = int(datetime1.timestamp())
+            # obj['time'] = datetime1.strftime('%Y%m%dT%H%M%S')
+            obj['open'] = ohlc['open']
+            obj['high'] = ohlc['high']
+            obj['low'] = ohlc['low']
+            obj['close'] = ohlc['close']
+            obj['volume'] = ohlc['volume']
+            print(datetime1.strftime('%Y-%m-%d %H-%M-%S'), ohlc['close'])
+            res.append(obj)
+        
+
+    payload = {
+        "data" : res,
+    }
+    print(len(payload["data"]))
+    return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
 

@@ -17,6 +17,7 @@ class Tokens(models.Model):
 
     is_trending = models.BooleanField(default=False,blank=True)
     is_sponsored = models.BooleanField(default=False,blank=True)
+    sponsored_details = models.CharField(max_length=500, default="",blank=True)
     views = models.IntegerField(default=0,blank=True)
 
     def __str__(self):

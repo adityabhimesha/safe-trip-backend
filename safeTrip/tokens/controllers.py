@@ -52,3 +52,17 @@ def getMetaVolumeLQTrades(baseAddress, quoteAddress, pairAddress, since):
                         headers=queries.headers)
         
     return res
+
+def getOHLCData(baseAddress,quoteAddress, since,till, resolution):
+    var = {
+        "base" : baseAddress,
+        "quote" : quoteAddress,
+        "since" : since,
+        "till" : till,
+        "time" : resolution,
+    }
+    res = requests.post(environ["BITQUERY_URL"],
+                        json={'query': queries.ohlcQuery, 'variables' : var},
+                        headers=queries.headers)
+        
+    return res
