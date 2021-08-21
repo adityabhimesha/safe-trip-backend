@@ -100,7 +100,7 @@ metaDataQuery = """
 
 query($base:String, $quote:String, $pair:String, $balance:[String!], $since:ISO8601DateTime){
   ethereum(network: bsc) {
-    details: address(address: {is: $base}) {
+    details: address(address: {is: $quote}) {
       address
       smartContract {
         attributes {
@@ -227,62 +227,3 @@ query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601
 #     }
 #   }
 # }
-
-
-# {
-#   ethereum(network: bsc) {
-#     details: address(address: {in: [
-#       "0xe3916a4dc3c952c78348379a62d66869d9b59942"
-#     ]}) {
-#       address
-#       smartContract {
-#         contractType
-#         attributes {
-#           name
-#           value
-#         }
-#         currency {
-#           symbol
-#           name
-#           decimals
-#           tokenType
-#         }
-#       }
-#     }
-#     DailyVolume: dexTrades(
-#       baseCurrency: {is: "0xe3916a4dc3c952c78348379a62d66869d9b59942"}
-#       quoteCurrency: {is: "0xe9e7cea3dedca5984780bafc599bd69add087d56"}
-#       time: {since: "2021-08-01T00:00:00", till: "2021-08-10T00:00:00"}
-#     ) {
-#       timeInterval {
-#         day(count: 1)
-#       }
-#       tradeAmount(in: USD)
-#       quotePrice
-#     }
-#   }
-# }
-
-
-# {
-#   ethereum(network: bsc) {
-#     dexTrades(
-#       options: {asc: "timeInterval.minute"}
-#       date: {till: "2021-10-12T07:23:21.000Z", since: "2021-08-10T07:23:21.000Z"}
-#       exchangeName: {in:["Pancake", "Pancake v2"]}
-#       baseCurrency: {is: "0xe3916a4dc3c952c78348379a62d66869d9b59942"}
-#       quoteCurrency: {is: "0xe9e7cea3dedca5984780bafc599bd69add087d56"}
-#     ) {
-#       timeInterval {
-#         minute(count: 30, format: "%Y-%m-%dT%H:%M:%SZ")
-#       }
-#       volume: quoteAmount
-#       high: quotePrice(calculate: maximum)
-#       low: quotePrice(calculate: minimum)
-#       open: minimum(of: block, get: quote_price)
-#       close: maximum(of: block, get: quote_price)
-#     }
-#   }
-# }
-
-

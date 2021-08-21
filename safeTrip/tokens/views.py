@@ -27,16 +27,25 @@ def searchToken(request):
     if result.status_code != 200:
         return HttpResponse(json.dumps(error), content_type="application/json")
     
+    quotes = ["BUSD", "WBNB", "USDT"]
     result = result.json()
     objs = []
     for pool in result['data']['ethereum']['dexTrades']:
-        new_pool = Tokens(
-            pk=pool['smartContract']['address']['address'],
-            pair_base_address=pool['baseCurrency']['address'],
-            pair_quote_address=pool['quoteCurrency']['address'],
-            pair_base_name=pool['baseCurrency']['symbol'],
-            pair_quote_name=pool['quoteCurrency']['symbol']
-        )
+        if pool['baseCurrency']['symbol'] in quotes:
+            new_pool = Tokens(
+                pk=pool['smartContract']['address']['address'],
+                pair_base_address=pool['quoteCurrency']['address'],
+                pair_quote_address=pool['baseCurrency']['address'],
+                pair_base_name=pool['quoteCurrency']['symbol'],
+                pair_quote_name=pool['baseCurrency']['symbol'])
+
+        else:
+            new_pool = Tokens(
+                pk=pool['smartContract']['address']['address'],
+                pair_base_address=pool['baseCurrency']['address'],
+                pair_quote_address=pool['quoteCurrency']['address'],
+                pair_base_name=pool['baseCurrency']['symbol'],
+                pair_quote_name=pool['quoteCurrency']['symbol'])
         objs.append(new_pool)
 
     #could get really risky!
@@ -130,8 +139,8 @@ def getTokenMetaData(request,poolAddress):
     print(end)
 
     result = controllers.getMetaVolumeLQTrades(
-        token.pair_base_address,
         token.pair_quote_address,
+        token.pair_base_address,
         token.pair_address,
         start.strftime('%Y%m%dT%H%M%S'),
         )
@@ -222,20 +231,17 @@ def getCandlesForChart(request):
         return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
 
     res = []
-    previousTime = till
     result = result.json()
     for ohlc in result['data']['ethereum']['dexTrades']:
         obj = {}
         datetime1 = datetime.datetime.strptime(ohlc['timeInterval']['minute'], "%Y-%m-%dT%H:%M:%SZ")
         if datetime1 > since and datetime1 < till:
             obj['time'] = int(datetime1.timestamp())
-            # obj['time'] = datetime1.strftime('%Y%m%dT%H%M%S')
             obj['open'] = ohlc['open']
             obj['high'] = ohlc['high']
             obj['low'] = ohlc['low']
             obj['close'] = ohlc['close']
             obj['volume'] = ohlc['volume']
-            print(datetime1.strftime('%Y-%m-%d %H-%M-%S'), ohlc['close'])
             res.append(obj)
         
 
