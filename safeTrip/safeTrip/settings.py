@@ -32,7 +32,7 @@ SECRET_KEY = environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = environ['DEBUG']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance']
 
 
 # Application definition
@@ -85,16 +85,16 @@ WSGI_APPLICATION = 'safeTrip.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-if DEBUG == False:
+if 'RDS_DB_NAME' in environ:
     #production DB
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': environ['DB_NAME'],
-            'USER' : environ['USERNAME'],
-            'PASSWORD': environ['PASSWORD'],
-            'HOST' : environ['HOST'],
-            'PORT': '5432',
+            'NAME': environ['RDS_DB_NAME'],
+            'USER': environ['RDS_USERNAME'],
+            'PASSWORD': environ['RDS_PASSWORD'],
+            'HOST': environ['RDS_HOSTNAME'],
+            'PORT': environ['RDS_PORT'],
         }
     }
 else:
