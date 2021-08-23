@@ -162,7 +162,7 @@ if DEBUG:
 else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:4200",
-        "app.safetrip.finance"
+        "https://app.safetrip.finance"
     ]
 
 STATIC_ROOT = path.join(BASE_DIR, 'static/')
