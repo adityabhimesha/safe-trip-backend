@@ -85,16 +85,30 @@ WSGI_APPLICATION = 'safeTrip.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': environ['DB_NAME'],
-        'USER' : environ['USERNAME'],
-        'PASSWORD': environ['PASSWORD'],
-        'HOST' : environ['HOST'],
-        'PORT': '5432',
+if DEBUG == False:
+    #production DB
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': environ['DB_NAME'],
+            'USER' : environ['USERNAME'],
+            'PASSWORD': environ['PASSWORD'],
+            'HOST' : environ['HOST'],
+            'PORT': '5432',
+        }
     }
-}
+else:
+    #local DB
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': environ['DB_NAME'],
+            'USER' : environ['USERNAME'],
+            'PASSWORD': environ['PASSWORD'],
+            'HOST' : environ['HOST'],
+            'PORT': '5432',
+        }
+    }
 
 
 # Password validation
