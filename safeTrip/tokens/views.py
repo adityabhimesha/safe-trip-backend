@@ -29,6 +29,8 @@ def searchToken(request):
     
     quotes = ["BUSD", "WBNB", "USDT"]
     result = result.json()
+    if(len(result) >= 5):
+        result = result[:5]
     objs = []
     for pool in result['data']['ethereum']['dexTrades']:
         if pool['baseCurrency']['symbol'] in quotes:
@@ -122,13 +124,23 @@ def getTokenMetaData(request,poolAddress):
             }
             return HttpResponse(json.dumps(payload), content_type="application/json")
 
-        token = Tokens(
-            pair_address=result[0]['smartContract']['address']['address'],
-            pair_base_name=result[0]['baseCurrency']['symbol'],
-            pair_quote_name=result[0]['quoteCurrency']['symbol'],
-            pair_base_address=result[0]['baseCurrency']['address'],
-            pair_quote_address=result[0]['quoteCurrency']['address'],
-        )
+        quotes = ["BUSD", "WBNB", "USDT"]
+        if(result[0]['baseCurrency']['symbol'] in quotes):
+            token = Tokens(
+                pair_address=result[0]['smartContract']['address']['address'],
+                pair_base_name=result[0]['quoteCurrency']['symbol'],
+                pair_quote_name=result[0]['baseCurrency']['symbol'],
+                pair_base_address=result[0]['quoteCurrency']['address'],
+                pair_quote_address=result[0]['baseCurrency']['address'],
+            )
+        else:
+            token = Tokens(
+                pair_address=result[0]['smartContract']['address']['address'],
+                pair_base_name=result[0]['baseCurrency']['symbol'],
+                pair_quote_name=result[0]['quoteCurrency']['symbol'],
+                pair_base_address=result[0]['baseCurrency']['address'],
+                pair_quote_address=result[0]['quoteCurrency']['address'],
+            )
         token.save()
 
 
@@ -148,7 +160,6 @@ def getTokenMetaData(request,poolAddress):
     if result.status_code != 200:
         error = {
             "status":"There has been an Error!",
-            
         }
         return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
     
@@ -176,7 +187,7 @@ def getTokenMetaData(request,poolAddress):
 def getSTFDailyChart(request):
     base = "0xe3916a4dc3c952c78348379a62d66869d9b59942"
     quote = "0xe9e7cea3dedca5984780bafc599bd69add087d56"
-    since = datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    since = datetime.datetime.utcnow() - datetime.timedelta(days=15)
     till = datetime.datetime.utcnow()
     resolution = "1440"
     result = controllers.getOHLCData(
