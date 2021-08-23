@@ -25,15 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 from dotenv import load_dotenv
 
 load_dotenv(".env")
-from os import environ
+from os import environ,path
 
 SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = environ['DEBUG']
+DEBUG = False
 
-ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance']
-
+if DEBUG:
+    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', 'localhost']
+else:
+    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', '172.31.24.202']
 
 # Application definition
 
@@ -147,13 +149,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200"
-]
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:4200"
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:4200",
+        "app.safetrip.finance"
+    ]
+
+STATIC_ROOT = path.join(BASE_DIR, 'static/')
+STATIC_URL = '/static/'

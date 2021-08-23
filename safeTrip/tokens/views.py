@@ -8,12 +8,6 @@ error = {
     "error" : "There Has Been A Error, Please Try Again!"
 }
 
-def status(request):
-    payload = {
-        "status" : "UP"
-    }
-    return HttpResponse(json.dumps(payload), content_type="application/json")
-
 def searchToken(request):
 
     value = request.GET['value']
