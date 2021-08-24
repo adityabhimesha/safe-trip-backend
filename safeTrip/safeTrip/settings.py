@@ -30,7 +30,7 @@ from os import environ,path
 SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = environ['DEBUG']
+DEBUG = environ['DEBUG'] == "True"
 
 if DEBUG == True:
     #local
