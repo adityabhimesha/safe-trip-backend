@@ -30,11 +30,13 @@ from os import environ,path
 SECRET_KEY = environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = environ['DEBUG']
 
-if DEBUG:
+if DEBUG == True:
+    #local
     ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', 'localhost']
 else:
+    #production
     ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', '172.31.24.202']
 
 # Application definition
@@ -155,14 +157,16 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-if DEBUG:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:4200"
-    ]
-else:
+if DEBUG == True:
+    #local
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:4200",
         "https://app.safetrip.finance"
+    ]
+else:
+    #production
+    CORS_ALLOWED_ORIGINS = [
+        "https://app.safetrip.finance",
     ]
 
 STATIC_ROOT = path.join(BASE_DIR, 'static/')
