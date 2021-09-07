@@ -5,8 +5,9 @@ from . import controllers
 import datetime
 
 error = {
-    "error" : "There Has Been A Error, Please Try Again!"
+    "error": "There Has Been A Error, Please Try Again!"
 }
+
 
 def searchToken(request):
 
@@ -17,7 +18,7 @@ def searchToken(request):
     res = controllers.queryStringinValue(value)
     if res.status_code != 200:
         return HttpResponse(json.dumps(error), content_type="application/json")
-    
+
     res = res.json()
     addresses = []
     for i in res['data']['search']:
@@ -26,7 +27,7 @@ def searchToken(request):
     result = controllers.queryAddressesForPairs(addresses)
     if result.status_code != 200:
         return HttpResponse(json.dumps(error), content_type="application/json")
-    
+
     quotes = ["BUSD", "WBNB", "USDT"]
     result = result.json()
     if(len(result) >= 5):
@@ -50,10 +51,10 @@ def searchToken(request):
                 pair_quote_name=pool['quoteCurrency']['symbol'])
         objs.append(new_pool)
 
-    #could get really risky!
+    # could get really risky!
     try:
         if len(objs) != 0:
-            Tokens.objects.bulk_create(objs, len(objs),ignore_conflicts=True)
+            Tokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
     except:
         print("Creation of objects from search results has failed!")
         pass
@@ -72,7 +73,7 @@ def getTrendingTokens(request):
         res["views"] = token.views
 
         payload.append(res)
-    
+
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
@@ -88,19 +89,19 @@ def getSponsoredTokens(request):
         res["details"] = token.sponsored_details
 
         payload.append(res)
-    
+
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
-#main call when requesting for pool address
-def getTokenMetaData(request,poolAddress):
+# main call when requesting for pool address
+def getTokenMetaData(request, poolAddress):
 
     if not poolAddress.startswith('0x'):
         payload = {
-            "error":"Address Requested Must Start with 0x"
+            "error": "Address Requested Must Start with 0x"
         }
         return HttpResponse(json.dumps(payload), content_type="application/json")
-    
+
     token = Tokens.objects.filter(pk=poolAddress)
     if len(token) != 0:
         token[0].views = token[0].views + 1
@@ -108,19 +109,19 @@ def getTokenMetaData(request,poolAddress):
         token = token[0]
 
     else:
-        #run pool search and add to DB
+        # run pool search and add to DB
         result = controllers.getBaseQuoteFromPairAddress(poolAddress)
         if result.status_code != 200:
             error = {
-                "error" : "There Has Been A Error While Fetching Data"
+                "error": "There Has Been A Error While Fetching Data"
             }
             return HttpResponse(json.dumps(error), content_type="application/json")
-        
+
         result = result.json()
         result = result['data']['ethereum']['dexTrades']
         if len(result) == 0:
             payload = {
-                "error":"Could Not Find The Pair Requested"
+                "error": "Could Not Find The Pair Requested"
             }
             return HttpResponse(json.dumps(payload), content_type="application/json")
 
@@ -143,9 +144,8 @@ def getTokenMetaData(request,poolAddress):
             )
         token.save()
 
-
     ar = datetime.datetime.utcnow()
-    temp = datetime.datetime(ar.year,ar.month,ar.day)
+    temp = datetime.datetime(ar.year, ar.month, ar.day)
     start = temp - datetime.timedelta(days=8)
     end = datetime.datetime.utcnow()
     print(end)
@@ -155,33 +155,31 @@ def getTokenMetaData(request,poolAddress):
         token.pair_base_address,
         token.pair_address,
         start.strftime('%Y%m%dT%H%M%S'),
-        )
+    )
 
     if result.status_code != 200:
         error = {
-            "status":"There has been an Error!",
+            "status": "There has been an Error!",
         }
-        return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
-    
+        return HttpResponse(json.dumps(error), content_type="application/json", status=500)
+
     result = result.json()
 
     payload = {
-        "tokens":{
-            "pair_address" : token.pair_address,
-            "pair_base_name" : token.pair_base_name,
-            "pair_quote_name" : token.pair_quote_name,
-            "pair_base_address" : token.pair_base_address,
-            "pair_quote_address" : token.pair_quote_address,
+        "tokens": {
+            "pair_address": token.pair_address,
+            "pair_base_name": token.pair_base_name,
+            "pair_quote_name": token.pair_quote_name,
+            "pair_base_address": token.pair_base_address,
+            "pair_quote_address": token.pair_quote_address,
         },
-        "details" : result['data']['ethereum']['details'],
-        "dailyVolume" : result['data']['ethereum']['dailyVolume'],
-        "liquidity" : result['data']['ethereum']['liquidity'],
-        "trades" : result['data']['ethereum']['trades'],
+        "details": result['data']['ethereum']['details'],
+        "dailyVolume": result['data']['ethereum']['dailyVolume'],
+        "liquidity": result['data']['ethereum']['liquidity'],
+        "trades": result['data']['ethereum']['trades'],
     }
 
-
     return HttpResponse(json.dumps(payload), content_type="application/json")
-
 
 
 def getSTFDailyChart(request):
@@ -196,21 +194,22 @@ def getSTFDailyChart(request):
         since.strftime('%Y%m%dT%H%M%S'),
         till.strftime('%Y%m%dT%H%M%S'),
         int(resolution)
-        )
+    )
     if result.status_code != 200:
         error = {
-            "status":"There has been an Error!",
-            
+            "status": "There has been an Error!",
+
         }
-        return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
-    
+        return HttpResponse(json.dumps(error), content_type="application/json", status=500)
+
     result = result.json()
     payload = {
-        "data" : result['data']['ethereum']['dexTrades'],
+        "data": result['data']['ethereum']['dexTrades'],
     }
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
-#chart data for other charts
+# chart data for other charts
+
 
 def getCandlesForChart(request):
     base = request.GET['base']
@@ -233,19 +232,20 @@ def getCandlesForChart(request):
         since.strftime('%Y%m%dT%H%M%SZ'),
         till.strftime('%Y%m%dT%H%M%SZ'),
         int(resolution)
-        )
+    )
     if result.status_code != 200:
         error = {
-            "status":"There has been an Error!",
-            
+            "status": "There has been an Error!",
+
         }
-        return HttpResponse(json.dumps(error), content_type="application/json",status=500) 
+        return HttpResponse(json.dumps(error), content_type="application/json", status=500)
 
     res = []
     result = result.json()
     for ohlc in result['data']['ethereum']['dexTrades']:
         obj = {}
-        datetime1 = datetime.datetime.strptime(ohlc['timeInterval']['minute'], "%Y-%m-%dT%H:%M:%SZ")
+        datetime1 = datetime.datetime.strptime(
+            ohlc['timeInterval']['minute'], "%Y-%m-%dT%H:%M:%SZ")
         if datetime1 > since and datetime1 < till:
             obj['time'] = int(datetime1.timestamp())
             obj['open'] = ohlc['open']
@@ -254,14 +254,12 @@ def getCandlesForChart(request):
             obj['close'] = ohlc['close']
             obj['volume'] = ohlc['volume']
             res.append(obj)
-        
 
     payload = {
-        "data" : res,
+        "data": res,
     }
     print(len(payload["data"]))
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
-
-#https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xe9e7cea3dedca5984780bafc599bd69add087d56
+# https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xe9e7cea3dedca5984780bafc599bd69add087d56

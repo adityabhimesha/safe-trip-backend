@@ -1,7 +1,7 @@
 from os import environ
 headers = {
     'X-API-KEY': environ["BITQUERY_API_KEY"],
-    'Content-Type' : 'application/json',
+    'Content-Type': 'application/json',
 }
 
 searchQuery = """
@@ -205,7 +205,7 @@ query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601
 """
 
 
-#Pancake Trade Volume for different currency pairs
+# Pancake Trade Volume for different currency pairs
 
 # {
 #   ethereum(network: bsc) {
