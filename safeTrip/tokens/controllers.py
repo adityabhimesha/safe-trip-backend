@@ -28,6 +28,20 @@ def queryAddressesForPairs(addresses):
     return res
 
 
+def queryAddressesForPairsWithNetwork(addresses, network, exchangeArr):
+    var = {
+        "arr": addresses,
+        "network": network,
+        "exchangearr": exchangeArr
+    }
+    res = requests.post(environ["BITQUERY_URL"],
+                        json={'query': queries.poolSearchQueryMultiNetwork,
+                              'variables': var},
+                        headers=queries.headers)
+
+    return res
+
+
 def getBaseQuoteFromPairAddress(pairAddress):
     var = {
         "pool": pairAddress,

@@ -182,6 +182,105 @@ def getTokenMetaData(request, poolAddress):
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
+# main call when requesting for pool address with network
+def getTokenMetaDataWithNetwork(request, network, poolAddress):
+
+    if not poolAddress.startswith('0x'):
+        payload = {
+            "error": "Address Requested Must Start with 0x"
+        }
+        return HttpResponse(json.dumps(payload), content_type="application/json")
+
+    token = Tokens.objects.filter(pk=poolAddress)
+    if len(token) != 0:
+        token[0].views = token[0].views + 1
+        token[0].save()
+        token = token[0]
+
+    else:
+        if network == "bsc":
+            exchangeArr = ["Pancake", "Pancake v2"]
+        elif network == "ethereum":
+            exchangeArr = ["Uniswap", "Uniswap v2"]
+        elif network == "matic":
+            exchangeArr = ["QuickSwap", "QuickSwap v2"]
+        else:
+            exchangeArr = []
+
+        # run pool search and add to DB
+        result = controllers.queryAddressesForPairsWithNetwork(
+            poolAddress, network, exchangeArr)
+        if result.status_code != 200:
+            error = {
+                "error": "There Has Been A Error While Fetching Data"
+            }
+            return HttpResponse(json.dumps(error), content_type="application/json")
+
+        result = result.json()
+        result = result['data']['ethereum']['dexTrades']
+        if len(result) == 0:
+            payload = {
+                "error": "Could Not Find The Pair Requested"
+            }
+            return HttpResponse(json.dumps(payload), content_type="application/json")
+
+        quotes = ["BUSD", "WBNB", "USDT"]
+        if(result[0]['baseCurrency']['symbol'] in quotes):
+            token = Tokens(
+                pair_address=result[0]['smartContract']['address']['address'],
+                pair_base_name=result[0]['quoteCurrency']['symbol'],
+                pair_quote_name=result[0]['baseCurrency']['symbol'],
+                pair_base_address=result[0]['quoteCurrency']['address'],
+                pair_quote_address=result[0]['baseCurrency']['address'],
+            )
+        else:
+            token = Tokens(
+                pair_address=result[0]['smartContract']['address']['address'],
+                pair_base_name=result[0]['baseCurrency']['symbol'],
+                pair_quote_name=result[0]['quoteCurrency']['symbol'],
+                pair_base_address=result[0]['baseCurrency']['address'],
+                pair_quote_address=result[0]['quoteCurrency']['address'],
+            )
+        token.save()
+
+    ar = datetime.datetime.utcnow()
+    temp = datetime.datetime(ar.year, ar.month, ar.day)
+    start = temp - datetime.timedelta(days=8)
+    end = datetime.datetime.utcnow()
+    print(end)
+
+    result = controllers.getMetaVolumeLQTrades(
+        token.pair_quote_address,
+        token.pair_base_address,
+        token.pair_address,
+        start.strftime('%Y%m%dT%H%M%S'),
+    )
+
+    if result.status_code != 200:
+        error = {
+            "status": "There has been an Error!",
+        }
+        return HttpResponse(json.dumps(error), content_type="application/json", status=500)
+
+    result = result.json()
+
+    payload = {
+        "tokens": {
+            "pair_address": token.pair_address,
+            "pair_base_name": token.pair_base_name,
+            "pair_quote_name": token.pair_quote_name,
+            "pair_base_address": token.pair_base_address,
+            "pair_quote_address": token.pair_quote_address,
+        },
+        "details": result['data']['ethereum']['details'],
+        "dailyVolume": result['data']['ethereum']['dailyVolume'],
+        "liquidity": result['data']['ethereum']['liquidity'],
+        "trades": result['data']['ethereum']['trades'],
+    }
+
+    return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
 def getSTFDailyChart(request):
     base = "0xe3916a4dc3c952c78348379a62d66869d9b59942"
     quote = "0xe9e7cea3dedca5984780bafc599bd69add087d56"

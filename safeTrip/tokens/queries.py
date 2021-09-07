@@ -5,7 +5,7 @@ headers = {
 }
 
 searchQuery = """
-    query($name:String!){
+    query($name:String!) {
         search(string: $name, network: bsc) {
           subject {
             __typename
@@ -64,6 +64,37 @@ poolSearchQuery = """
 }
  
 """
+
+poolSearchQueryMultiNetwork = """
+query ($arr: [String!], $network:EthereumNetwork, $exchangearr: [String!]) {
+  ethereum(network: $network) {
+    dexTrades(
+      options: {limit: 25, desc: "count"}
+      baseCurrency: {in: $arr}
+      exchangeName: {in: $exchangearr}
+    ) {
+      smartContract {
+        address {
+          address
+        }
+      }
+      count
+      exchange {
+        name
+      }
+      baseCurrency {
+        address
+        symbol
+      }
+      quoteCurrency {
+        address
+        symbol
+      }
+    }
+  }
+}
+"""
+
 baseQuoteAddressQuery = """
 query($pool:String){
   ethereum(network: bsc) {
