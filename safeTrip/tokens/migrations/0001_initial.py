@@ -14,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Tokens',
             fields=[
-                ('pair_address', models.CharField(max_length=255, primary_key=True, serialize=False)),
+                ('pair_address', models.CharField(
+                    max_length=255, primary_key=True, serialize=False)),
                 ('pair_name', models.CharField(max_length=255)),
                 ('cmc_link', models.CharField(default='', max_length=255)),
                 ('coin_gecko_link', models.CharField(default='', max_length=255)),

@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+from os import environ, path
+from dotenv import load_dotenv
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,11 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-#LOAD ENV VARSSS
-from dotenv import load_dotenv
+# LOAD ENV VARSSS
 
 load_dotenv(".env")
-from os import environ,path
 
 SECRET_KEY = environ["SECRET_KEY"]
 
@@ -33,11 +33,13 @@ SECRET_KEY = environ["SECRET_KEY"]
 DEBUG = environ['DEBUG'] == "True"
 
 if DEBUG == True:
-    #local
-    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', 'localhost']
+    # local
+    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com',
+                     'api.safetrip.finance', 'localhost']
 else:
-    #production
-    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com', 'api.safetrip.finance', '172.31.24.202']
+    # production
+    ALLOWED_HOSTS = ['safetrip-dev.eu-central-1.elasticbeanstalk.com',
+                     'api.safetrip.finance', '172.31.24.202']
 
 # Application definition
 
@@ -90,7 +92,7 @@ WSGI_APPLICATION = 'safeTrip.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 if 'RDS_DB_NAME' in environ:
-    #production DB
+    # production DB
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -102,14 +104,14 @@ if 'RDS_DB_NAME' in environ:
         }
     }
 else:
-    #local DB
+    # local DB
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': environ['DB_NAME'],
-            'USER' : environ['USERNAME'],
+            'USER': environ['USERNAME'],
             'PASSWORD': environ['PASSWORD'],
-            'HOST' : environ['HOST'],
+            'HOST': environ['HOST'],
             'PORT': '5432',
         }
     }
@@ -158,13 +160,13 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 if DEBUG == True:
-    #local
+    # local
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:4200",
         "https://app.safetrip.finance"
     ]
 else:
-    #production
+    # production
     CORS_ALLOWED_ORIGINS = [
         "https://app.safetrip.finance",
     ]
