@@ -9,7 +9,7 @@ urlpatterns = [
     path('metadata/<slug:poolAddress>', getTokenMetaData),
     path('metadata/<str:network>/<slug:poolAddress>', getTokenMetaDataWithNetwork),
     path('chartdata/', getCandlesForChart),
-    path('chartdata/<str:network>/<slug:pairAddress>',
+    path('chartdata/<str:network>/',
          getCandlesForChartWithNetwork),
     path('safe-trip-chart/', getSTFDailyChart),
     path('sponsored/', getSponsoredTokens),
