@@ -34,6 +34,36 @@ searchQuery = """
       }
 """
 
+searchQueryWithNetwork = """
+    query($name:String!, $network: EthereumNetwork) {
+        search(string: $name, network: $network) {
+          subject {
+            __typename
+            ... on Address {
+              address
+              annotation
+            }
+            ... on Currency {
+              symbol
+              name
+              address
+              tokenType
+              decimals
+            }
+            ... on SmartContract {
+              address
+              annotation
+              contractType
+              protocol
+            }
+          }
+          network {
+            network
+          }
+        }
+      }
+"""
+
 poolSearchQuery = """
     query ($arr: [String!]) {
   ethereum(network: bsc) {
@@ -214,6 +244,31 @@ ohlcQuery = """
 
 query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601DateTime){
   ethereum(network: bsc) {
+    dexTrades(
+      options: {asc: "timeInterval.minute"}
+      date: {till:$till, since: $since}
+      exchangeName: {in:["Pancake", "Pancake v2"]}
+      baseCurrency: {is: $base}
+      quoteCurrency: {is: $quote}
+    ) {
+      timeInterval {
+        minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
+      }
+      volume: quoteAmount
+      high: quotePrice(calculate: maximum)
+      low: quotePrice(calculate: minimum)
+      open: minimum(of: block, get: quote_price)
+      close: maximum(of: block, get: quote_price)
+    }
+  }
+}
+
+"""
+
+ohlcQueryWithNetwork = """
+
+query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601DateTime, $network: EthereumNetwork){
+  ethereum(network: $network) {
     dexTrades(
       options: {asc: "timeInterval.minute"}
       date: {till:$till, since: $since}

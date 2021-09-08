@@ -1,6 +1,9 @@
 import json
 from django.http import HttpResponse
 from .models import Tokens
+from .models import PancakeTokens
+from .models import UniswapTokens
+from .models import MaticTokens
 from . import controllers
 import datetime
 
@@ -49,6 +52,87 @@ def searchToken(request):
                 pair_quote_address=pool['quoteCurrency']['address'],
                 pair_base_name=pool['baseCurrency']['symbol'],
                 pair_quote_name=pool['quoteCurrency']['symbol'])
+        objs.append(new_pool)
+
+    # could get really risky!
+    try:
+        if len(objs) != 0:
+            Tokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
+    except:
+        print("Creation of objects from search results has failed!")
+        pass
+    return HttpResponse(json.dumps(result), content_type="application/json")
+
+
+def searchTokenWithNetwork(request, network):
+
+    value = request.GET['value']
+    if not value.startswith('0x'):
+        value = value.upper()
+
+    res = controllers.queryStringinValueWithNetwork(value, network)
+    if res.status_code != 200:
+        return HttpResponse(json.dumps(error), content_type="application/json")
+
+    res = res.json()
+    addresses = []
+    for i in res['data']['search']:
+        addresses.append(i['subject']['address'])
+
+    result = controllers.queryAddressesForPairsWithNetwork(addresses, network)
+    if result.status_code != 200:
+        return HttpResponse(json.dumps(error), content_type="application/json")
+
+    quotes = ["BUSD", "WBNB", "USDT"]
+    result = result.json()
+    if(len(result) >= 5):
+        result = result[:5]
+    objs = []
+    for pool in result['data']['ethereum']['dexTrades']:
+        if pool['baseCurrency']['symbol'] in quotes:
+            if network == 'bsc':
+                new_pool = PancakeTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['quoteCurrency']['address'],
+					pair_quote_address=pool['baseCurrency']['address'],
+					pair_base_name=pool['quoteCurrency']['symbol'],
+					pair_quote_name=pool['baseCurrency']['symbol'])
+            elif network == 'ethereum':
+                new_pool = UniswapTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['quoteCurrency']['address'],
+					pair_quote_address=pool['baseCurrency']['address'],
+					pair_base_name=pool['quoteCurrency']['symbol'],
+					pair_quote_name=pool['baseCurrency']['symbol'])
+            else:
+                new_pool = MaticTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['quoteCurrency']['address'],
+					pair_quote_address=pool['baseCurrency']['address'],
+					pair_base_name=pool['quoteCurrency']['symbol'],
+					pair_quote_name=pool['baseCurrency']['symbol'])
+        else:
+            if network == 'bsc':
+                new_pool = PancakeTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['baseCurrency']['address'],
+					pair_quote_address=pool['quoteCurrency']['address'],
+					pair_base_name=pool['baseCurrency']['symbol'],
+					pair_quote_name=pool['quoteCurrency']['symbol'])
+            elif network == 'ethereum':
+            	new_pool = UniswapTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['baseCurrency']['address'],
+					pair_quote_address=pool['quoteCurrency']['address'],
+					pair_base_name=pool['baseCurrency']['symbol'],
+					pair_quote_name=pool['quoteCurrency']['symbol'])
+            else:
+                new_pool = MaticTokens(
+					pk=pool['smartContract']['address']['address'],
+					pair_base_address=pool['baseCurrency']['address'],
+					pair_quote_address=pool['quoteCurrency']['address'],
+					pair_base_name=pool['baseCurrency']['symbol'],
+					pair_quote_name=pool['quoteCurrency']['symbol'])
         objs.append(new_pool)
 
     # could get really risky!
@@ -331,6 +415,58 @@ def getCandlesForChart(request):
         since.strftime('%Y%m%dT%H%M%SZ'),
         till.strftime('%Y%m%dT%H%M%SZ'),
         int(resolution)
+    )
+    if result.status_code != 200:
+        error = {
+            "status": "There has been an Error!",
+
+        }
+        return HttpResponse(json.dumps(error), content_type="application/json", status=500)
+
+    res = []
+    result = result.json()
+    for ohlc in result['data']['ethereum']['dexTrades']:
+        obj = {}
+        datetime1 = datetime.datetime.strptime(
+            ohlc['timeInterval']['minute'], "%Y-%m-%dT%H:%M:%SZ")
+        if datetime1 > since and datetime1 < till:
+            obj['time'] = int(datetime1.timestamp())
+            obj['open'] = ohlc['open']
+            obj['high'] = ohlc['high']
+            obj['low'] = ohlc['low']
+            obj['close'] = ohlc['close']
+            obj['volume'] = ohlc['volume']
+            res.append(obj)
+
+    payload = {
+        "data": res,
+    }
+    print(len(payload["data"]))
+    return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+def getCandlesForChartWithNetwork(request, network):
+    base = request.GET['base']
+    quote = request.GET['quote']
+    till = datetime.datetime.fromtimestamp(int(request.GET['till']))
+    resolution = request.GET['resolution']
+
+    if resolution == '1D':
+        resolution = "1440"
+    elif resolution == '1W':
+        resolution = "10080"
+
+    count = (int(request.GET['count'])) * (int(resolution))
+    since = till - datetime.timedelta(minutes=count)
+
+    print(since, till, count)
+    result = controllers.getOHLCDataWithNetwork(
+        base,
+        quote,
+        since.strftime('%Y%m%dT%H%M%SZ'),
+        till.strftime('%Y%m%dT%H%M%SZ'),
+        int(resolution),
+        network
     )
     if result.status_code != 200:
         error = {
