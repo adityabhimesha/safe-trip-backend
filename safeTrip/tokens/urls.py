@@ -3,7 +3,7 @@ from .views import *
 
 urlpatterns = [
     path('search/', searchToken),
-    path('search/<str:network>', searchTokenWithNetwork),
+    path('search/<str:network>/', searchTokenWithNetwork),
     path('trending/', getTrendingTokens),
     path('trending/<str:network>', getTrendingTokensWithNetwork),
     path('metadata/<slug:poolAddress>', getTokenMetaData),

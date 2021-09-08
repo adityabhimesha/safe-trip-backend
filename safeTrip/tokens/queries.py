@@ -35,7 +35,7 @@ searchQuery = """
 """
 
 searchQueryWithNetwork = """
-    query($name:String!, $network: EthereumNetwork) {
+    query($name:String!, $network: Network) {
         search(string: $name, network: $network) {
           subject {
             __typename
@@ -96,12 +96,12 @@ poolSearchQuery = """
 """
 
 poolSearchQueryMultiNetwork = """
-query ($arr: [String!], $network:EthereumNetwork, $exchangearr: [String!]) {
+query ($arr: [String!], $network:EthereumNetwork, $exchangeName: [String!]) {
   ethereum(network: $network) {
     dexTrades(
       options: {limit: 25, desc: "count"}
       baseCurrency: {in: $arr}
-      exchangeName: {in: $exchangearr}
+			exchangeName: {in: $exchangeName}
     ) {
       smartContract {
         address {

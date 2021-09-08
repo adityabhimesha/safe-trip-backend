@@ -77,7 +77,7 @@ def searchTokenWithNetwork(request, network):
     res = res.json()
     addresses = []
     for i in res['data']['search']:
-        addresses.append(i['subject']['address'])
+        addresses.append(i['subject']['address'])	
 
     result = controllers.queryAddressesForPairsWithNetwork(addresses, network)
     if result.status_code != 200:
@@ -137,8 +137,13 @@ def searchTokenWithNetwork(request, network):
 
     # could get really risky!
     try:
-        if len(objs) != 0:
-            Tokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
+					if len(objs) != 0:
+						if network == 'bsc':
+								PancakeTokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
+						elif network == 'ethereum':
+								UniswapTokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
+						else:
+								MaticTokens.objects.bulk_create(objs, len(objs), ignore_conflicts=True)
     except:
         print("Creation of objects from search results has failed!")
         pass
