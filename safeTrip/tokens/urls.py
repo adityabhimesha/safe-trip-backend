@@ -5,7 +5,7 @@ urlpatterns = [
     path('search/', searchToken),
     path('search/<str:network>/', searchTokenWithNetwork),
     path('trending/', getTrendingTokens),
-    path('trending/<str:network>', getTrendingTokensWithNetwork),
+    path('trending/<str:network>/', getTrendingTokensWithNetwork),
     path('metadata/<slug:poolAddress>', getTokenMetaData),
     path('metadata/<str:network>/<slug:poolAddress>', getTokenMetaDataWithNetwork),
     path('chartdata/', getCandlesForChart),
@@ -13,6 +13,6 @@ urlpatterns = [
          getCandlesForChartWithNetwork),
     path('safe-trip-chart/', getSTFDailyChart),
     path('sponsored/', getSponsoredTokens),
-    path('sponsored/<str:network>', getSponsoredTokensWithNetwork),
+    path('sponsored/<str:network>/', getSponsoredTokensWithNetwork),
 
 ]
