@@ -92,47 +92,47 @@ def searchTokenWithNetwork(request, network):
         if pool['baseCurrency']['symbol'] in quotes:
             if network == 'bsc':
                 new_pool = PancakeTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['quoteCurrency']['address'],
-					pair_quote_address=pool['baseCurrency']['address'],
-					pair_base_name=pool['quoteCurrency']['symbol'],
-					pair_quote_name=pool['baseCurrency']['symbol'])
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['quoteCurrency']['address'],
+                    pair_quote_address=pool['baseCurrency']['address'],
+                    pair_base_name=pool['quoteCurrency']['symbol'],
+                    pair_quote_name=pool['baseCurrency']['symbol'])
             elif network == 'ethereum':
                 new_pool = UniswapTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['quoteCurrency']['address'],
-					pair_quote_address=pool['baseCurrency']['address'],
-					pair_base_name=pool['quoteCurrency']['symbol'],
-					pair_quote_name=pool['baseCurrency']['symbol'])
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['quoteCurrency']['address'],
+                    pair_quote_address=pool['baseCurrency']['address'],
+                    pair_base_name=pool['quoteCurrency']['symbol'],
+                    pair_quote_name=pool['baseCurrency']['symbol'])
             else:
                 new_pool = MaticTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['quoteCurrency']['address'],
-					pair_quote_address=pool['baseCurrency']['address'],
-					pair_base_name=pool['quoteCurrency']['symbol'],
-					pair_quote_name=pool['baseCurrency']['symbol'])
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['quoteCurrency']['address'],
+                    pair_quote_address=pool['baseCurrency']['address'],
+                    pair_base_name=pool['quoteCurrency']['symbol'],
+                    pair_quote_name=pool['baseCurrency']['symbol'])
         else:
             if network == 'bsc':
                 new_pool = PancakeTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['baseCurrency']['address'],
-					pair_quote_address=pool['quoteCurrency']['address'],
-					pair_base_name=pool['baseCurrency']['symbol'],
-					pair_quote_name=pool['quoteCurrency']['symbol'])
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['baseCurrency']['address'],
+                    pair_quote_address=pool['quoteCurrency']['address'],
+                    pair_base_name=pool['baseCurrency']['symbol'],
+                    pair_quote_name=pool['quoteCurrency']['symbol'])
             elif network == 'ethereum':
-            	new_pool = UniswapTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['baseCurrency']['address'],
-					pair_quote_address=pool['quoteCurrency']['address'],
-					pair_base_name=pool['baseCurrency']['symbol'],
-					pair_quote_name=pool['quoteCurrency']['symbol'])
+                new_pool = UniswapTokens(
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['baseCurrency']['address'],
+                    pair_quote_address=pool['quoteCurrency']['address'],
+                    pair_base_name=pool['baseCurrency']['symbol'],
+                    pair_quote_name=pool['quoteCurrency']['symbol'])
             else:
                 new_pool = MaticTokens(
-					pk=pool['smartContract']['address']['address'],
-					pair_base_address=pool['baseCurrency']['address'],
-					pair_quote_address=pool['quoteCurrency']['address'],
-					pair_base_name=pool['baseCurrency']['symbol'],
-					pair_quote_name=pool['quoteCurrency']['symbol'])
+                    pk=pool['smartContract']['address']['address'],
+                    pair_base_address=pool['baseCurrency']['address'],
+                    pair_quote_address=pool['quoteCurrency']['address'],
+                    pair_base_name=pool['baseCurrency']['symbol'],
+                    pair_quote_name=pool['quoteCurrency']['symbol'])
         objs.append(new_pool)
 
     # could get really risky!
@@ -161,6 +161,28 @@ def getTrendingTokens(request):
     return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
+def getTrendingTokensWithNetwork(request, network):
+	payload = []
+
+	if network == 'bsc':
+		topTokens = PancakeTokens.objects.all().order_by('-views')[:10]
+	elif network == 'ethereum':
+		topTokens = UniswapTokens.objects.all().order_by('-views')[:10]
+	else:
+		topTokens = MaticTokens.objects.all().order_by('-views')[:10]
+	
+	for token in topTokens:
+		res = {}
+		res["pair_address"] = token.pair_address
+		res["pair_base_name"] = token.pair_base_name
+		res["pair_quote_name"] = token.pair_quote_name
+		res["views"] = token.views
+		
+		payload.append(res)
+		
+	return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
 def getSponsoredTokens(request):
 
     topTokens = Tokens.objects.filter(is_sponsored=True)
@@ -175,6 +197,27 @@ def getSponsoredTokens(request):
         payload.append(res)
 
     return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+def getSponsoredTokensWithNetwork(request, network):
+	payload = []
+
+	if network == 'bsc':
+		topTokens = PancakeTokens.objects.filter(is_sponsored=True)
+	elif network == 'ethereum':
+		topTokens = UniswapTokens.objects.filter(is_sponsored=True)
+	else:
+		topTokens = MaticTokens.objects.filter(is_sponsored=True)
+	
+	for token in topTokens:
+		res = {}
+		res["pair_address"] = token.pair_address
+		res["pair_base_name"] = token.pair_base_name
+		res["pair_quote_name"] = token.pair_quote_name
+		res["details"] = token.sponsored_details
+		payload.append(res)
+	
+	return HttpResponse(json.dumps(payload), content_type="application/json")
 
 
 # main call when requesting for pool address
