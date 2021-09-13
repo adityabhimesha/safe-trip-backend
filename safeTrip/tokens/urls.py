@@ -14,5 +14,4 @@ urlpatterns = [
     path('safe-trip-chart/', getSTFDailyChart),
     path('sponsored/', getSponsoredTokens),
     path('sponsored/<str:network>/', getSponsoredTokensWithNetwork),
-
 ]

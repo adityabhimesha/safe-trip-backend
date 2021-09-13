@@ -57,7 +57,7 @@ def queryAddressesForPairsWithNetwork(addresses, network):
     }
 		
 		res = requests.post(environ["BITQUERY_URL"],
-                        json={'query': queries.poolSearchQueryMultiNetwork,
+                        json={'query': queries.poolSearchQueryWithNetwork,
                               'variables': var},
                         headers=queries.headers)
 		return res
@@ -92,6 +92,25 @@ def getMetaVolumeLQTrades(baseAddress, quoteAddress, pairAddress, since):
 
     return res
 
+def getMetaVolumeLQTradesWithNetwork(baseAddress, quoteAddress, pairAddress, since, exchangeName, network):
+    var = {
+        "base": baseAddress,
+        "quote": quoteAddress,
+        "pair": pairAddress,
+        "since": since,
+        "balance": [
+            baseAddress,
+            quoteAddress,
+        ],
+        "exchangeName": exchangeName,
+        "network": network
+    }
+    res = requests.post(environ["BITQUERY_URL"],
+                        json={'query': queries.metaDataQueryWithNetwork, 'variables': var},
+                        headers=queries.headers)
+
+    return res
+
 
 def getOHLCData(baseAddress, quoteAddress, since, till, resolution):
     var = {
@@ -108,17 +127,18 @@ def getOHLCData(baseAddress, quoteAddress, since, till, resolution):
     return res
 
 
-def getOHLCDataWithNetwork(baseAddress, quoteAddress, since, till, resolution, network):
+def getOHLCDataWithNetwork(baseAddress, quoteAddress, since, till, resolution, exchangeName, network):
     var = {
         "base": baseAddress,
         "quote": quoteAddress,
         "since": since,
         "till": till,
         "time": resolution,
+        "exchangeName": exchangeName,
         "network": network
     }
     res = requests.post(environ["BITQUERY_URL"],
-                        json={'query': queries.ohlcQuery, 'variables': var},
+                        json={'query': queries.ohlcQueryWithNetwork, 'variables': var},
                         headers=queries.headers)
 
     return res
