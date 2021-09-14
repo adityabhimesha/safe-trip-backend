@@ -31,7 +31,7 @@ def searchToken(request):
     if result.status_code != 200:
         return HttpResponse(json.dumps(error), content_type="application/json")
 
-    quotes = ["BUSD", "WBNB", "USDT"]
+    quotes = ["BUSD", "WBNB", "USDT", "USDC", "WETH", "WMATIC"]
     result = result.json()
     if(len(result) >= 5):
         result = result[:5]
@@ -83,7 +83,7 @@ def searchTokenWithNetwork(request, network):
     if result.status_code != 200:
         return HttpResponse(json.dumps(error), content_type="application/json")
 
-    quotes = ["BUSD", "WBNB", "USDT"]
+    quotes = ["BUSD", "WBNB", "USDT", "USDC", "WETH", "WMATIC"]
     result = result.json()
     if(len(result) >= 5):
         result = result[:5]
@@ -345,8 +345,8 @@ def getTokenMetaDataWithNetwork(request, network, poolAddress):
 
     else:
         # run pool search and add to DB
-        result = controllers.queryAddressesForPairsWithNetwork(
-            poolAddress, network, exchangeName)
+        result = controllers.getBaseQuoteFromPairAddressWithNetwork(
+            poolAddress, network)
         if result.status_code != 200:
             error = {
                 "error": "There Has Been A Error While Fetching Data"
@@ -361,7 +361,8 @@ def getTokenMetaDataWithNetwork(request, network, poolAddress):
             }
             return HttpResponse(json.dumps(payload), content_type="application/json")
 
-        quotes = ["BUSD", "WBNB", "USDT"]
+
+        quotes = ["BUSD", "WBNB", "USDT", "USDC", "WETH", "WMATIC"]
         if(result[0]['baseCurrency']['symbol'] in quotes):
             if network == "bsc":
                 token = PancakeTokens(
@@ -433,6 +434,7 @@ def getTokenMetaDataWithNetwork(request, network, poolAddress):
         error = {
             "status": "There has been an Error!",
         }
+        print(result)
         return HttpResponse(json.dumps(error), content_type="application/json", status=500)
 
     result = result.json()

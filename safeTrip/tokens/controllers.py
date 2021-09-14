@@ -53,7 +53,7 @@ def queryAddressesForPairsWithNetwork(addresses, network):
 		var = {
         "arr": addresses,
         "network": network,
-				"exchangeName": exchangeName
+		"exchangeName": exchangeName
     }
 		
 		res = requests.post(environ["BITQUERY_URL"],
@@ -69,6 +69,27 @@ def getBaseQuoteFromPairAddress(pairAddress):
     }
     res = requests.post(environ["BITQUERY_URL"],
                         json={'query': queries.baseQuoteAddressQuery,
+                              'variables': var},
+                        headers=queries.headers)
+
+    return res
+def getBaseQuoteFromPairAddressWithNetwork(pairAddress, network):
+
+    if network == 'bsc':
+        exchangeName = ['Pancake', 'Pancake v2']
+    elif network == 'ethereum':
+        exchangeName = ['Uniswap', 'Uniswap v2']
+    else:
+        exchangeName = ["QuickSwap", "QuickSwap v2"]
+		
+	
+    var = {
+        "pool": pairAddress,
+        "network": network,
+		"exchangeName": exchangeName
+    }
+    res = requests.post(environ["BITQUERY_URL"],
+                        json={'query': queries.baseQuoteAddressQueryWithNetwork,
                               'variables': var},
                         headers=queries.headers)
 
