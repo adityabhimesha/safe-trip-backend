@@ -1,292 +1,412 @@
 from os import environ
 headers = {
-    'X-API-KEY': environ["BITQUERY_API_KEY"],
-    'Content-Type': 'application/json',
+  'X-API-KEY': environ["BITQUERY_API_KEY"],
+  'Content-Type': 'application/json',
 }
 
 searchQuery = """
-    query($name:String!) {
-        search(string: $name, network: bsc) {
-          subject {
-            __typename
-            ... on Address {
-              address
-              annotation
-            }
-            ... on Currency {
-              symbol
-              name
-              address
-              tokenType
-              decimals
-            }
-            ... on SmartContract {
-              address
-              annotation
-              contractType
-              protocol
-            }
-          }
-          network {
-            network
-          }
+
+  query($name:String!) {
+    search(string: $name, network: bsc) {
+      subject {
+        __typename
+        ... on Address {
+          address
+          annotation
+        }
+        ... on Currency {
+          symbol
+          name
+          address
+          tokenType
+          decimals
+        }
+        ... on SmartContract {
+          address
+          annotation
+          contractType
+          protocol
         }
       }
+      network {
+        network
+      }
+    }
+  }
+
 """
 
 searchQueryWithNetwork = """
-    query($name:String!, $network: Network) {
-        search(string: $name, network: $network) {
-          subject {
-            __typename
-            ... on Address {
-              address
-              annotation
-            }
-            ... on Currency {
-              symbol
-              name
-              address
-              tokenType
-              decimals
-            }
-            ... on SmartContract {
-              address
-              annotation
-              contractType
-              protocol
-            }
-          }
-          network {
-            network
-          }
+
+  query ($name: String!, $network: Network) {
+    search(string: $name, network: $network) {
+      subject {
+        __typename
+        ... on Address {
+          address
+          annotation
+        }
+        ... on Currency {
+          symbol
+          name
+          address
+          tokenType
+          decimals
+        }
+        ... on SmartContract {
+          address
+          annotation
+          contractType
+          protocol
         }
       }
+      network {
+        network
+      }
+    }
+  }
+
 """
 
 poolSearchQuery = """
-    query ($arr: [String!]) {
-  ethereum(network: bsc) {
-    dexTrades(
-      options: {limit: 25, desc: "count"}
-      baseCurrency: {in: $arr}
-      exchangeName: {in: ["Pancake", "Pancake v2"]}
-    ) {
-      smartContract {
-        address {
-          address
+
+  query ($arr: [String!]) {
+    ethereum(network: bsc) {
+      dexTrades(
+        options: {limit: 25, desc: "count"}
+        baseCurrency: {in: $arr}
+        exchangeName: {in: ["Pancake", "Pancake v2"]}
+      ) {
+        smartContract {
+          address {
+            address
+          }
         }
-      }
-      count
-      exchange {
-        name
-      }
-      baseCurrency {
-        address
-        symbol
-      }
-      quoteCurrency {
-        address
-        symbol
+        count
+        exchange {
+          name
+        }
+        baseCurrency {
+          address
+          symbol
+        }
+        quoteCurrency {
+          address
+          symbol
+        }
       }
     }
   }
-}
- 
+
 """
 
-poolSearchQueryMultiNetwork = """
-query ($arr: [String!], $network:EthereumNetwork, $exchangeName: [String!]) {
-  ethereum(network: $network) {
-    dexTrades(
-      options: {limit: 25, desc: "count"}
-      baseCurrency: {in: $arr}
-			exchangeName: {in: $exchangeName}
-    ) {
-      smartContract {
-        address {
-          address
+poolSearchQueryWithNetwork = """
+
+  query ($arr: [String!], $network: EthereumNetwork, $exchangeName: [String!]) {
+    ethereum(network: $network) {
+      dexTrades(
+        options: {limit: 25, desc: "count"}
+        baseCurrency: {in: $arr}
+        exchangeName: {in: $exchangeName}
+      ) {
+        smartContract {
+          address {
+            address
+          }
         }
-      }
-      count
-      exchange {
-        name
-      }
-      baseCurrency {
-        address
-        symbol
-      }
-      quoteCurrency {
-        address
-        symbol
+        count
+        exchange {
+          name
+        }
+        baseCurrency {
+          address
+          symbol
+        }
+        quoteCurrency {
+          address
+          symbol
+        }
       }
     }
   }
-}
+
 """
 
 baseQuoteAddressQuery = """
-query($pool:String){
-  ethereum(network: bsc) {
-    dexTrades(
-      options: {limit: 25, desc: "count"}
-      exchangeName: {in: ["Pancake", "Pancake v2"]}
-      smartContractAddress: {is: $pool}
-    ) {
-      smartContract {
-        address {
-          address
+
+  query ($pool: String) {
+    ethereum(network: bsc) {
+      dexTrades(
+        options: {limit: 25, desc: "count"}
+        exchangeName: {in: ["Pancake", "Pancake v2"]}
+        smartContractAddress: {is: $pool}
+      ) {
+        smartContract {
+          address {
+            address
+          }
         }
-      }
-      count
-      exchange {
-        name
-      }
-      baseCurrency {
-        address
-        symbol
-      }
-      quoteCurrency {
-        address
-        symbol
+        count
+        exchange {
+          name
+        }
+        baseCurrency {
+          address
+          symbol
+        }
+        quoteCurrency {
+          address
+          symbol
+        }
       }
     }
   }
-}
 
 """
 
+baseQuoteAddressQueryWithNetwork = """
+
+  query ($pool: String, $network: EthereumNetwork, $exchangeName: [String!]) {
+    ethereum(network: $network) {
+      dexTrades(
+        options: {limit: 25, desc: "count"}
+        exchangeName: {in: $exchangeName}
+        smartContractAddress: {is: $pool}
+      ) {
+        smartContract {
+          address {
+            address
+          }
+        }
+        count
+        exchange {
+          name
+        }
+        baseCurrency {
+          address
+          symbol
+        }
+        quoteCurrency {
+          address
+          symbol
+        }
+      }
+    }
+  }
+
+"""
 
 metaDataQuery = """
 
-query($base:String, $quote:String, $pair:String, $balance:[String!], $since:ISO8601DateTime){
-  ethereum(network: bsc) {
-    details: address(address: {is: $quote}) {
-      address
-      smartContract {
-        attributes {
-          name
+  query ($base: String, $quote: String, $pair: String, $balance: [String!], $since: ISO8601DateTime) {
+    ethereum(network: bsc) {
+      details: address(address: {is: $quote}) {
+        address
+        smartContract {
+          attributes {
+            name
+            value
+          }
+          currency {
+            symbol
+            name
+            decimals
+            tokenType
+          }
+        }
+      }
+      dailyVolume: dexTrades(
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+        exchangeName: {in: ["Pancake", "Pancake v2"]}
+        time: {since: $since}
+      ) {
+        timeInterval {
+          day(count: 1)
+        }
+        tradeAmount(in: USD)
+        quotePrice
+      }
+      liquidity: address(address: {is: $pair}) {
+        address
+        balances(currency: {in: $balance}) {
+          currency {
+            symbol
+            address
+          }
           value
         }
-        currency {
-          symbol
-          name
-          decimals
-          tokenType
+      }
+      trades: dexTrades(
+        options: {limit: 500, desc: ["block.timestamp.time"]}
+        exchangeName: {in: ["Pancake", "Pancake v2"]}
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+        date: {since: "2021-08-08"}
+      ) {
+        block {
+          height
+          timestamp {
+            time(format: "%Y-%m-%d %H:%M:%S")
+          }
         }
-      }
-    }
-    dailyVolume: dexTrades(
-      baseCurrency: {is: $base}
-      quoteCurrency: {is: $quote}
-      exchangeName: {in: ["Pancake", "Pancake v2"]}
-      time: {since: $since}
-    ) {
-      timeInterval {
-        day(count: 1)
-      }
-      tradeAmount(in: USD)
-      quotePrice
-    }
-		liquidity: address(address: {is: $pair}) {
-      address
-      balances(currency: {in: $balance}) {
-        currency {
+        buyAmount
+        buyCurrency {
+          address
           symbol
+        }
+        sellAmount
+        sellCurrency {
+          address
+          symbol
+        }
+        transaction {
+          hash
+        }
+        side
+        taker {
           address
         }
-        value
-      }
-    }
-    trades:dexTrades(
-      options: {limit: 500, desc: ["block.timestamp.time"]}
-      exchangeName: {in: ["Pancake", "Pancake v2"]}
-      baseCurrency: {is: $base}
-      quoteCurrency: {is: $quote}
-      date: {since: "2021-08-08"}
-    ) {
-      block {
-        height
-        timestamp {
-          time(format: "%Y-%m-%d %H:%M:%S")
+        maker {
+          address
         }
+        tradeAmount(in: USD)
+        price
       }
-      buyAmount
-      buyCurrency {
-        address
-        symbol
-      }
-      sellAmount
-      sellCurrency {
-        address
-        symbol
-      }
-      transaction {
-        hash
-      }
-      side
-      taker {
-        address
-      }
-      maker{
-        address
-      }
-      tradeAmount(in: USD)
-      price
     }
   }
-}
 
+"""
+
+metaDataQueryWithNetwork = """
+
+  query ($base: String, $quote: String, $pair: String, $balance: [String!], $since: ISO8601DateTime, $exchangeName: [String!], $network: EthereumNetwork) {
+    ethereum(network: $network) {
+      details: address(address: {is: $quote}) {
+        address
+        smartContract {
+          attributes {
+            name
+            value
+          }
+          currency {
+            symbol
+            name
+            decimals
+            tokenType
+          }
+        }
+      }
+      dailyVolume: dexTrades(
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+        exchangeName: {in: $exchangeName}
+        time: {since: $since}
+      ) {
+        timeInterval {
+          day(count: 1)
+        }
+        tradeAmount(in: USD)
+        quotePrice
+      }
+      liquidity: address(address: {is: $pair}) {
+        address
+        balances(currency: {in: $balance}) {
+          currency {
+            symbol
+            address
+          }
+          value
+        }
+      }
+      trades: dexTrades(
+        options: {limit: 500, desc: ["block.timestamp.time"]}
+        exchangeName: {in: $exchangeName}
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+        date: {since: $since}
+      ) {
+        block {
+          height
+          timestamp {
+            time(format: "%Y-%m-%d %H:%M:%S")
+          }
+        }
+        buyAmount
+        buyCurrency {
+          address
+          symbol
+        }
+        sellAmount
+        sellCurrency {
+          address
+          symbol
+        }
+        transaction {
+          hash
+        }
+        side
+        taker {
+          address
+        }
+        maker {
+          address
+        }
+        tradeAmount(in: USD)
+        price
+      }
+    }
+  }
 
 """
 
 ohlcQuery = """
 
-query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601DateTime){
-  ethereum(network: bsc) {
-    dexTrades(
-      options: {asc: "timeInterval.minute"}
-      date: {till:$till, since: $since}
-      exchangeName: {in:["Pancake", "Pancake v2"]}
-      baseCurrency: {is: $base}
-      quoteCurrency: {is: $quote}
-    ) {
-      timeInterval {
-        minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
+  query ($base: String, $quote: String, $time: Int, $since: ISO8601DateTime, $till: ISO8601DateTime) {
+    ethereum(network: bsc) {
+      dexTrades(
+        options: {asc: "timeInterval.minute"}
+        date: {till: $till, since: $since}
+        exchangeName: {in: ["Pancake", "Pancake v2"]}
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+      ) {
+        timeInterval {
+          minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
+        }
+        volume: quoteAmount
+        high: quotePrice(calculate: maximum)
+        low: quotePrice(calculate: minimum)
+        open: minimum(of: block, get: quote_price)
+        close: maximum(of: block, get: quote_price)
       }
-      volume: quoteAmount
-      high: quotePrice(calculate: maximum)
-      low: quotePrice(calculate: minimum)
-      open: minimum(of: block, get: quote_price)
-      close: maximum(of: block, get: quote_price)
     }
   }
-}
 
 """
 
 ohlcQueryWithNetwork = """
-
-query($base:String,$quote:String,$time:Int,$since:ISO8601DateTime, $till:ISO8601DateTime, $network: EthereumNetwork){
-  ethereum(network: $network) {
-    dexTrades(
-      options: {asc: "timeInterval.minute"}
-      date: {till:$till, since: $since}
-      exchangeName: {in:["Pancake", "Pancake v2"]}
-      baseCurrency: {is: $base}
-      quoteCurrency: {is: $quote}
-    ) {
-      timeInterval {
-        minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
+  
+  query ($base: String, $quote: String, $time: Int, $since: ISO8601DateTime, $till: ISO8601DateTime, $exchangeName: [String!], $network: EthereumNetwork) {
+    ethereum(network: $network) {
+      dexTrades(
+        options: {asc: "timeInterval.minute"}
+        date: {till: $till, since: $since}
+        exchangeName: {in: $exchangeName}
+        baseCurrency: {is: $base}
+        quoteCurrency: {is: $quote}
+      ) {
+        timeInterval {
+          minute(count: $time, format: "%Y-%m-%dT%H:%M:%SZ")
+        }
+        volume: quoteAmount
+        high: quotePrice(calculate: maximum)
+        low: quotePrice(calculate: minimum)
+        open: minimum(of: block, get: quote_price)
+        close: maximum(of: block, get: quote_price)
       }
-      volume: quoteAmount
-      high: quotePrice(calculate: maximum)
-      low: quotePrice(calculate: minimum)
-      open: minimum(of: block, get: quote_price)
-      close: maximum(of: block, get: quote_price)
     }
   }
-}
 
 """
 
